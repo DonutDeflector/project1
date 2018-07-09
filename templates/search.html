@@ -1,0 +1,10 @@
+{% set page_name = "Search" %}
+
+{% extends "layouts/default.html" %}
+
+{% block body %}
+  {% include "includes/navbar.html" %}
+  <div class="full-height d-flex flex-column justify-content-center align-items-center">
+    {% include "includes/searchbar.html" %}
+  </div>
+{% endblock %}

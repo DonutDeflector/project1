@@ -1,0 +1,15 @@
+
+  <h1 class="text-center mb-3">Find your city.</h1>
+  <div class="col-sm-8 col-md-6 mb-1 mb-md-3">
+  <form class="searchbar" action="{{ url_for('search_results') }}" method="post">
+    <div class="form-row">
+      <div class="form-group col-8 col-sm-9">
+        <input name="search_query" type="search_query" class="form-control"
+        id="search_query" placeholder="enter zipcode or city" required>
+      </div>
+      <div class="form-group col-4 col-sm-3">
+        <button type="submit" class="btn btn-primary">Submit</button>
+      </div>
+    </div>
+    </div>
+  </form>

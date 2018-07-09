@@ -1,0 +1,69 @@
+{% if request.url_rule.endpoint == "index" %}
+  {% set page_name = "Login" %}
+{% else %}
+  {% set page_name = "Register" %}
+{% endif %}
+
+{% extends "layouts/default.html" %}
+
+{% block body %}
+<div class="full-height d-flex justify-content-center align-items-center">
+  <div class="col-md-6">
+      <div class="card login-register-card bg-dark">
+        <div class="card-body">
+          <h2 class="card-title text-center">
+            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32"
+            viewBox="0 0 24 24">
+              <path fill="#64d5ca" d="M12 0c-4.87 7.197-8 11.699-8 16.075 0 4.378
+          3.579 7.925 8 7.925s8-3.547 8-7.925c0-4.376-3.13-8.878-8-16.075zm.462
+          20.471c2.56-1.049 4.124-4.889 3.021-8.853 3.798 4.909.754 9.393-3.021
+          8.853z" />
+            </svg>
+            Rainy Day
+          </h2>
+          {% include "includes/flash.html" %}
+          <!-- if the user is in the index, submit to returning_user, else
+          submit to new_user -->
+          {% if request.url_rule.endpoint == "index" %}
+          <form action="{{ url_for('returning_user') }}" method="post">
+            {% else %}
+            <form action="{{ url_for('new_user') }}" method="post">
+              {% endif %}
+              <div class="form-group">
+                <label for="username">Username</label>
+                <input name="username" type="username" class="form-control"
+                id="username" aria-describedby="username" placeholder="Username"
+                required>
+              </div>
+              <div class="form-group">
+                <label for="password">Password</label>
+                <input name="password" type="password" class="form-control"
+                id="password" aria-describedby="password" placeholder="Password"
+                required>
+              </div>
+            <!-- if the user is in the index, submit button should be login,
+            else make it register -->
+            {% if request.url_rule.endpoint == "index" %}
+            <div class="form-group">
+              <button type="submit" class="btn btn-primary">Login</button>
+            </div>
+            <span class="d-block mb-3">New to Rainy Day?
+              <a href="/register">Register</a>
+            </span>
+            {% else %}
+            <div class="form-group">
+              <button type="submit" class="btn btn-primary">Register</button>
+            </div>
+            <span class="d-block mb-3">Returning User?
+              <a href="/">Login</a>
+            </span>
+            {% endif %}
+            <span>Don't want to be signed in?
+              <a href="{{url_for('search')}}">Proceed</a>
+            </span>
+          </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

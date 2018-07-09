@@ -1,0 +1,20 @@
+{% set page_name = "404" %}
+
+{% extends "layouts/default.html" %}
+
+{% block body %}
+<div class="full-height d-flex">
+  <div class="col flex-column d-flex justify-content-center align-items-center pt-3 pb-3">
+    <h1 class="text-center">404: Not Found</h1>
+    <img class="img-fluid mt-3 mb-3" src="{{ url_for('static',filename='img/monkey.jpg')}}"
+    alt="confused monkey" />
+    <p class="text-center">
+      Our highly trained team of monkeys is unable to find the page you
+      reqested.
+    </p>
+    <button class="btn btn-primary">
+      <a href="{{url_for('search')}}">Back to Search Page</a>
+    </button>
+  </div>
+</div>
+{% endblock %}

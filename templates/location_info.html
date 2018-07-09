@@ -1,0 +1,48 @@
+{% set page_name = location.city.lower().capitalize() + ", " + location.state + " | " + location.zipcode %}
+
+{% extends "layouts/default.html" %}
+
+{% block body %}
+  {% include "includes/navbar.html" %}
+  <div class="container">
+    <div class="row">
+      <div class="col col-sm-8 col-md-6 offset-sm-2 offset-md-3">
+        <div class="d-flex flex-column">
+          <h1 class="text-capitalize">{{location.city.lower()}}, {{location.state}}</h1>
+            <span>
+              <span class="font-weight-bold">ZIP</span>
+              <span> | {{location.zipcode}}</span>
+            </span>
+            <span>
+              <span class="font-weight-bold">LAT, LONG</span>
+              <span> | {{location.lat}}, {{location.long}}</span>
+            </span>
+            <span>
+              <span class="font-weight-bold">POPULATION</span>
+              <span> | {{location.population}}</span>
+            </span>
+          <h2>Weather</h2>
+            <span>
+              <span class="font-weight-bold">SUMMARY</span>
+              <span> | {{weather.summary}}</span>
+            </span>
+            <span>
+              <span class="font-weight-bold">TEMPERATURE</span>
+              <span> | {{weather.temperature | int}}&#176;F</span>
+            </span>
+            <span>
+              <span class="font-weight-bold">DEW POINT</span>
+              <span> | {{weather.dewPoint | int}}&#176;F</span>
+            </span>
+            <span>
+              <span class="font-weight-bold">HUMIDITY</span>
+              <span> | {{(weather.humidity * 100) | int}}%</span>
+            </span>
+        </div>
+        <hr>
+        {% include "includes/check_in.html" %}
+        {% include "includes/comments.html" %}
+      </div>
+    </div>
+  </div>
+{% endblock %}

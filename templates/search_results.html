@@ -1,0 +1,43 @@
+{% set page_name = "Search" %}
+
+{% extends "layouts/default.html" %}
+
+{% block body %}
+  {% include "includes/navbar.html" %}
+<div class="container">
+  <div class="d-flex flex-column justify-content-center align-items-center">
+  {% include "includes/searchbar.html" %}
+  </div>
+  <div class="row">
+  <!-- if there are no results, render this alert instead -->
+  {% if locations.rowcount == False %}
+    <div class="col-sm-8 col-md-6 offset-sm-2 offset-md-3">
+      <div class="alert alert-danger" role="alert">
+        No results! :(
+      </div>
+    </div>
+  {% else %}
+  {% for location in locations %}
+    <div class="col-md-6 col-lg-4">
+      <a class="card-link"
+      href="{{ url_for('location_info', zipcode=location.zipcode) }}">
+      <div class="card bg-dark mb-3 mb-md-4">
+        <div class="card-body">
+          <div class="card-text">
+            <div class="d-flex flex-column align-items-center">
+              <h3 class="text-capitalize">{{location.city.lower()}}, {{location.state}}</h3>
+                <div class="zipcode">
+                  <span class="font-weight-bold">ZIP</span>
+                  <span> | {{location.zipcode}}</span>
+                </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      </a>
+    </div>
+  {% endfor %}
+  {% endif %}
+  </div>
+</div>
+{% endblock %}
