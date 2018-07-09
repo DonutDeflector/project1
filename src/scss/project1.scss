@@ -133,6 +133,10 @@ hr {
   width: 100%;
   position: fixed;
 
+  .navbar-toggler {
+    border: 0;
+  }
+
   .btn {
     padding: 0;
   }

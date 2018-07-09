@@ -21,6 +21,9 @@
               <span class="font-weight-bold">POPULATION</span>
               <span> | {{location.population}}</span>
             </span>
+        </div>
+        <hr>
+        <div class="d-flex flex-column">
           <h2>Weather</h2>
             <span>
               <span class="font-weight-bold">SUMMARY</span>
@@ -37,6 +40,10 @@
             <span>
               <span class="font-weight-bold">HUMIDITY</span>
               <span> | {{(weather.humidity * 100) | int}}%</span>
+            </span>
+            <span class="mt-4">
+              <span class="font-weight-bold"> LAST UPDATED</span>
+              <span>| {{time}}</span>
             </span>
         </div>
         <hr>

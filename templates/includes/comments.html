@@ -1,11 +1,11 @@
 <h3>Check Ins</h3>
-  <p class="mb-3">
+  <span class="mb-3">
     <span class="font-weight-bold">Total</span>
-    | {{comments.rowcount}}
-    </p>
+    <span>| {{comments.rowcount}}</span>
+  </span>
 
   {% for comment in comments | reverse %}
-    <div class="card bg-dark mb-4">
+    <div class="card bg-dark mt-4">
       <div class="card-body">
         <div class="card-title">
           <h5>{{comment.username}}</h5>

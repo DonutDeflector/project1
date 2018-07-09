@@ -8,6 +8,7 @@ from sqlalchemy.orm import scoped_session, sessionmaker
 
 import requests
 import json
+import datetime
 
 app = Flask(__name__)
 app.secret_key = "incredibleblackmagic"
@@ -125,7 +126,7 @@ def location_info(zipcode):
         "SELECT * FROM locations WHERE zipcode = :zipcode", {
             "zipcode": zipcode}).fetchone()
 
-    # if no results are returned, set variable to False
+    # if no results are returned, return 404
     if location is None:
         return render_template('404.html'), 404
 
@@ -140,16 +141,34 @@ def location_info(zipcode):
     weather = json.dumps(weather["currently"])
     weather = json.loads(weather)
 
+    # convert epoch time to datetime
+    time = int(json.dumps(weather["time"]))
+    time = datetime.datetime.fromtimestamp(time).strftime('%I:%M:%S %p')
+
+    # save session zipcode and username as variables
+    zipcode = session.get("zipcode", None)
+    username = session.get("username", None)
+
     # fetch comments for the location
     comments = db.execute("SELECT * FROM check_ins WHERE zipcode = :zipcode", {
         "zipcode": zipcode})
+
+    # check to see if user has already commented, if so, set variable to disable
+    # comment field
+    if db.execute("SELECT * FROM check_ins WHERE zipcode = :zipcode AND \
+        username = :username",
+                  {"zipcode": zipcode, "username": username}).rowcount == True:
+        commented = True
+    else:
+        commented = False
 
     # save the zipcode, to be utilized for check ins
     session["zipcode"] = zipcode
 
     # render page with location information
     return render_template("location_info.html", location=location,
-                           comments=comments, weather=weather)
+                           weather=weather, time=time, comments=comments,
+                           commented=commented)
 
 
 @app.route("/checkin", methods=["POST"])
@@ -162,13 +181,6 @@ def check_in():
     zipcode = session.get("zipcode", None)
     username = session.get("username", None)
 
-    # check to see if user has already commented and disallow them from doing so
-    # again
-    if db.execute("SELECT * FROM check_ins WHERE zipcode = :zipcode \
-        AND username = :username", {
-            "zipcode": zipcode, "username": username}).rowcount == True:
-        return render_template("failure.html", message="ERROR: already commented!")
-
     # add comment to database
     db.execute("INSERT INTO check_ins(zipcode, username, comment) \
     VALUES(:zipcode, :username, :comment)", {
@@ -178,7 +190,7 @@ def check_in():
     db.commit()
 
     # notify user of success and reload page
-    flash("Comment successfully added.", "success")
+    flash("Comment successfully submitted.", "success")
     return redirect(url_for("location_info", zipcode=zipcode))
 
 
