@@ -1,5 +1,5 @@
 <h3>Submit Check In</h3>
-{% include "flash.html" %}
+{% include "includes/flash.html" %}
 <form class="mt-3" action="{{ url_for('check_in') }}" method="post">
   <div class="form-group">
     {% if "username" in session %}

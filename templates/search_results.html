@@ -21,19 +21,19 @@
     <div class="col-md-6 col-lg-4">
       <a class="card-link"
       href="{{ url_for('location_info', zipcode=location.zipcode) }}">
-      <div class="card bg-dark mb-3 mb-md-4">
-        <div class="card-body">
-          <div class="card-text">
-            <div class="d-flex flex-column align-items-center">
-              <h3 class="text-capitalize">{{location.city.lower()}}, {{location.state}}</h3>
+        <div class="card bg-dark mb-3 mb-md-4">
+          <div class="card-body">
+            <div class="card-text">
+              <div class="d-flex flex-column align-items-center">
+                <h3 class="text-capitalize">{{location.city.lower()}}, {{location.state}}</h3>
                 <div class="zipcode">
                   <span class="font-weight-bold">ZIP</span>
                   <span> | {{location.zipcode}}</span>
                 </div>
+              </div>
             </div>
           </div>
         </div>
-      </div>
       </a>
     </div>
   {% endfor %}
