@@ -11,7 +11,7 @@ import json
 import datetime
 
 app = Flask(__name__)
-app.secret_key = "incredibleblackmagic"
+app.secret_key = "AYU9n36P&99amJDcyCQYT4Q3"
 
 # Check for environment variable
 if not os.getenv("DATABASE_URL"):
@@ -36,14 +36,14 @@ def index():
         return redirect(url_for("search"))
     # else, render the login form
     else:
-        return render_template("login-register.html")
+        return render_template("login_register.html")
 
 
 @app.route("/register")
 def register():
     """User Registration"""
 
-    return render_template("login-register.html")
+    return render_template("login_register.html")
 
 
 @app.route("/returninguser", methods=["POST"])
