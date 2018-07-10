@@ -54,9 +54,9 @@ def returning_user():
     username = request.form.get("username")
     password = request.form.get("password")
 
-    # check to see if the user exists, if not render the failure page
-    if db.execute("SELECT * FROM users WHERE username = :username", {
-            "username": username}).rowcount == False:
+    # check to see if the user exists, if not refresh page with failure message
+    if db.execute("SELECT * FROM users WHERE username = :username",
+                  {"username": username}).rowcount == False:
         flash("ERROR: User does not exist.", "danger")
         return redirect(url_for("index"))
 
@@ -66,7 +66,7 @@ def returning_user():
         # add username to session and redirect to search page
         session["username"] = username
         return redirect(url_for("search"))
-    # if the password doesn't match, render the failure page
+    # if the password doesn't match, refresh the page with failure message
     else:
         flash("ERROR: Password does not match.", "danger")
         return redirect(url_for("index"))
@@ -82,57 +82,64 @@ def new_user():
 
     # check to see if user already exists in database, if so render the failure
     # page
-    if db.execute("SELECT * FROM users WHERE username = :username", {
-            "username": username}).rowcount == True:
+    if db.execute("SELECT * FROM users WHERE username = :username",
+                  {"username": username}).rowcount == True:
         flash("ERROR: Username already taken.", "danger")
         return redirect(url_for("register"))
 
     # add new user to database
     db.execute("INSERT INTO users (username, password) \
-    VALUES (:username, :password)", {
-               "username": username, "password": password})
+    VALUES (:username, :password)",
+               {"username": username, "password": password})
 
     # commit user data to database
     db.commit()
+
+    # return to login page and display success message
     flash("Registration successful.", "success")
     return redirect(url_for("index"))
 
 
 @app.route("/search")
 def search():
+    """Search Page Rendering"""
+
     return render_template("search.html")
 
 
-@app.route("/searchresults", methods=["POST"])
+@app.route("/search", methods=["POST"])
 def search_results():
+    """Search Results"""
 
-    # capture search query from form
-    search_query = request.form.get("search_query")
+    # capture search query from form and add placeholders
+    search_query = "%" + request.form.get("search_query") + "%"
 
     # find zipcodes and cities similar to the search query and save them
     locations = db.execute("SELECT * FROM locations WHERE zipcode \
-    LIKE :search_query OR city LIKE UPPER(:search_query)", {
-        "search_query": "%" + search_query + "%"})
+                           LIKE :search_query OR city LIKE UPPER(:search_query)",
+                           {"search_query": search_query})
 
-    # render page with results
+    # render page with location results
     return render_template("search_results.html", locations=locations)
 
 
 @app.route("/location/<zipcode>")
 def location_info(zipcode):
+    """Location Information"""
 
     # find location information in database via zipcode
-    location = db.execute(
-        "SELECT * FROM locations WHERE zipcode = :zipcode", {
-            "zipcode": zipcode}).fetchone()
+    location = db.execute("SELECT * FROM locations WHERE zipcode = :zipcode",
+                          {"zipcode": zipcode}).fetchone()
 
     # if no results are returned, return 404
     if location is None:
         return render_template('404.html'), 404
 
-    # construct API call for weather
+    # save lat and long data as strings
     lat = str(location[4])
     long = str(location[5])
+
+    # construct API call for weather
     api_call = "https://api.darksky.net/forecast/8744aa1238d1ffb8b86d1083af591f40/" \
         + lat + "," + long
 
@@ -145,25 +152,25 @@ def location_info(zipcode):
     time = int(json.dumps(weather["time"]))
     time = datetime.datetime.fromtimestamp(time).strftime('%I:%M:%S %p')
 
+    # save the zipcode, to be utilized for check ins
+    session["zipcode"] = zipcode
+
     # save session zipcode and username as variables
     zipcode = session.get("zipcode", None)
     username = session.get("username", None)
 
     # fetch comments for the location
-    comments = db.execute("SELECT * FROM check_ins WHERE zipcode = :zipcode", {
-        "zipcode": zipcode})
+    comments = db.execute("SELECT * FROM check_ins WHERE zipcode = :zipcode",
+                          {"zipcode": zipcode})
 
     # check to see if user has already commented, if so, set variable to disable
     # comment field
-    if db.execute("SELECT * FROM check_ins WHERE zipcode = :zipcode AND \
-        username = :username",
+    if db.execute("SELECT * FROM check_ins WHERE zipcode = :zipcode \
+                  AND username = :username",
                   {"zipcode": zipcode, "username": username}).rowcount == True:
         commented = True
     else:
         commented = False
-
-    # save the zipcode, to be utilized for check ins
-    session["zipcode"] = zipcode
 
     # render page with location information
     return render_template("location_info.html", location=location,
@@ -173,6 +180,7 @@ def location_info(zipcode):
 
 @app.route("/checkin", methods=["POST"])
 def check_in():
+    """Check In"""
 
     # capture comment from form
     comment = request.form.get("comment")
@@ -183,8 +191,8 @@ def check_in():
 
     # add comment to database
     db.execute("INSERT INTO check_ins(zipcode, username, comment) \
-    VALUES(:zipcode, :username, :comment)", {
-        "zipcode": zipcode, "comment": comment, "username": username})
+               VALUES(:zipcode, :username, :comment)",
+               {"zipcode": zipcode, "comment": comment, "username": username})
 
     # commit comment to database
     db.commit()
@@ -196,6 +204,8 @@ def check_in():
 
 @app.route("/logout")
 def logout():
+    """User Logout"""
+
     # remove user from session and return to login page
     session.pop("username", None)
     return redirect("/")
