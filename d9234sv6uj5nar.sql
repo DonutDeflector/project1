@@ -8,10 +8,11 @@ CREATE SEQUENCE check_ins_id_seq INCREMENT 1 MINVALUE 1 MAXVALUE 2147483647 STAR
 
 CREATE TABLE "public"."check_ins" (
     "id" integer DEFAULT nextval('check_ins_id_seq') NOT NULL,
-    "zipcode" character varying(5) NOT NULL,
+    "location_id" integer NOT NULL,
     "username" character varying NOT NULL,
     "comment" character varying NOT NULL,
-    CONSTRAINT "check_ins_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "check_ins_pkey" PRIMARY KEY ("id"),
+    CONSTRAINT "check_ins_location_id_fkey" FOREIGN KEY (location_id) REFERENCES locations(id) NOT DEFERRABLE
 ) WITH (oids = false);
 
 
@@ -30,6 +31,10 @@ CREATE TABLE "public"."locations" (
     CONSTRAINT "locations_pkey" PRIMARY KEY ("id")
 ) WITH (oids = false);
 
+CREATE INDEX "locations_city" ON "public"."locations" USING btree ("city");
+
+CREATE INDEX "locations_zipcode" ON "public"."locations" USING btree ("zipcode");
+
 
 DROP TABLE IF EXISTS "users";
 DROP SEQUENCE IF EXISTS users_id_seq;
@@ -43,4 +48,4 @@ CREATE TABLE "public"."users" (
 ) WITH (oids = false);
 
 
--- 2018-07-09 18:48:02.4749+00
+-- 2018-07-11 02:59:55.281045+00

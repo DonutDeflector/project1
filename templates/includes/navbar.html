@@ -17,26 +17,27 @@
   </button>
   <div class="collapse navbar-collapse" id="navbarSupportedContent">
     <ul class="d-flex navbar-nav ml-auto align-items-center">
-      <li class="nav-item">
-        <a class="nav-link mb-2 mb-sm-0 mr-0 mr-sm-2" href="{{ url_for('search') }}">Search
-        </a>
-      </li>
+        <li class="nav-item">
+          <button type="button" class="btn btn-primary mt-3 mt-sm-0 mb-3 mb-sm-0 mr-0 mr-sm-3">
+            <a class="nav-link" href="{{ url_for('search') }}">Search</a>
+          </button>
+        </li>
       <!-- if a user isn't logged in, display login and register buttons, else
       display the logout button -->
       {% if "username" not in session %}
         <li class="nav-item">
-          <button type="button" class="btn btn-primary mb-2 mb-sm-0 mr-0 mr-sm-2">
+          <button type="button" class="btn btn-outline-primary mt-sm-0 mb-3 mb-sm-0 mr-0 mr-sm-3">
             <a class="nav-link" href="{{ url_for('index') }}">Login</a>
           </button>
         </li>
         <li class="nav-item">
-          <button type="button" class="btn btn-outline-primary">
+          <button type="button" class="btn btn-outline-primary mb-2 mb-sm-0">
             <a class="nav-link" href="{{ url_for('register') }}">Register</a>
           </button>
         </li>
       {% else %}
         <li class="nav-item">
-          <button type="button" class="btn btn-outline-danger">
+          <button type="button" class="btn btn-outline-danger mb-2 mb-sm-0">
             <a class="nav-link" href="{{ url_for('logout') }}">Logout</a>
           </button>
         </li>

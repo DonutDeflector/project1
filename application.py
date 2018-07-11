@@ -1,7 +1,7 @@
 import os
 
 from flask import Flask, session, render_template, request, redirect, url_for, \
-    escape, flash
+    escape, flash, jsonify
 from flask_session import Session
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
@@ -60,16 +60,15 @@ def returning_user():
         flash("ERROR: User does not exist.", "danger")
         return redirect(url_for("index"))
 
-    # verify the user's password
+    # if password doesn't match, refresh page with error message
     if db.execute("SELECT username FROM users WHERE password = :password",
-                  {"username": username, "password": password}).rowcount == True:
-        # add username to session and redirect to search page
-        session["username"] = username
-        return redirect(url_for("search"))
-    # if the password doesn't match, refresh the page with failure message
-    else:
+                  {"username": username, "password": password}).rowcount == False:
         flash("ERROR: Password does not match.", "danger")
         return redirect(url_for("index"))
+
+    # add username to session and redirect to search page
+    session["username"] = username
+    return redirect(url_for("search"))
 
 
 @app.route("/newuser", methods=["POST"])
@@ -102,7 +101,7 @@ def new_user():
 
 @app.route("/search")
 def search():
-    """Search Page Rendering"""
+    """Search Page"""
 
     return render_template("search.html")
 
@@ -150,24 +149,26 @@ def location_info(zipcode):
 
     # convert epoch time to datetime
     time = int(json.dumps(weather["time"]))
-    time = datetime.datetime.fromtimestamp(time).strftime('%I:%M:%S %p')
+    time = datetime.datetime.fromtimestamp(
+        time).strftime('%I:%M:%S %p')
 
-    # save the zipcode, to be utilized for check ins
+    # save the location_id and zipcode to be utilized for check ins
+    session["location_id"] = location[0]
     session["zipcode"] = zipcode
 
-    # save session zipcode and username as variables
-    zipcode = session.get("zipcode", None)
+    # save session location_id and username as variables
+    location_id = session.get("location_id", None)
     username = session.get("username", None)
 
     # fetch comments for the location
-    comments = db.execute("SELECT * FROM check_ins WHERE zipcode = :zipcode",
-                          {"zipcode": zipcode})
+    comments = db.execute("SELECT * FROM check_ins WHERE location_id = :location_id",
+                          {"location_id": location_id})
 
     # check to see if user has already commented, if so, set variable to disable
     # comment field
-    if db.execute("SELECT * FROM check_ins WHERE zipcode = :zipcode \
+    if db.execute("SELECT * FROM check_ins WHERE location_id = :location_id \
                   AND username = :username",
-                  {"zipcode": zipcode, "username": username}).rowcount == True:
+                  {"location_id": location_id, "username": username}).rowcount == True:
         commented = True
     else:
         commented = False
@@ -185,14 +186,15 @@ def check_in():
     # capture comment from form
     comment = request.form.get("comment")
 
-    # save session zipcode and username as variables
+    # save session zipcode, location_id, and username as variables
     zipcode = session.get("zipcode", None)
+    location_id = session.get("location_id", None)
     username = session.get("username", None)
 
     # add comment to database
-    db.execute("INSERT INTO check_ins(zipcode, username, comment) \
-               VALUES(:zipcode, :username, :comment)",
-               {"zipcode": zipcode, "comment": comment, "username": username})
+    db.execute("INSERT INTO check_ins(location_id, username, comment) \
+               VALUES(:location_id, :username, :comment)",
+               {"location_id": location_id, "comment": comment, "username": username})
 
     # commit comment to database
     db.commit()
@@ -200,6 +202,38 @@ def check_in():
     # notify user of success and reload page
     flash("Comment successfully submitted.", "success")
     return redirect(url_for("location_info", zipcode=zipcode))
+
+
+@app.route("/api/<zipcode>")
+def api(zipcode):
+    """API Response for a Single Location"""
+
+    # find location information in database via zipcode
+    location = db.execute("SELECT * FROM locations WHERE zipcode = :zipcode",
+                          {"zipcode": zipcode}).fetchone()
+
+    # if no results are returned, return 422
+    if location is None:
+        return jsonify({"error": "Invalid zipcode"}), 422
+
+    # set location_id, used to fetch check ins
+    location_id = location.id
+
+    # fetch number of check ins for location
+    check_ins = db.execute("SELECT COUNT(*) FROM check_ins \
+                           WHERE location_id = :location_id",
+                           {"location_id": location_id})
+
+    # output information about location, with proper formatting
+    return jsonify({
+        "place_name": location.city.lower().capitalize(),
+        "state": location.state,
+        "latitude": str(location.lat),
+        "longitude": str(location.long),
+        "zip": location.zipcode,
+        "population": location.population,
+        "check_ins": check_ins.fetchone()[0]
+    })
 
 
 @app.route("/logout")
