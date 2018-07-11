@@ -5,7 +5,8 @@ Web Programming with Python and JavaScript
 ## Premise
 
 Rainy day allows users to search up cities and towns in order to view the
-weather and login in order to submit check-ins.
+weather and register an account in order to login for the purpose of submiting
+check-ins.
 
 ## File Overview
 
