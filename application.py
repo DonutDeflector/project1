@@ -11,6 +11,8 @@ import json
 import datetime
 
 app = Flask(__name__)
+
+# set cookie key
 app.secret_key = "AYU9n36P&99amJDcyCQYT4Q3"
 
 # Check for environment variable
@@ -34,14 +36,17 @@ def index():
     # if a user is already logged in, redirect them to the search page
     if "username" in session:
         return redirect(url_for("search"))
-    # else, render the login form
-    else:
-        return render_template("login_register.html")
+
+    return render_template("login_register.html")
 
 
 @app.route("/register")
 def register():
     """User Registration"""
+
+    # if a user is already logged in, redirect them to the search page
+    if "username" in session:
+        return redirect(url_for("search"))
 
     return render_template("login_register.html")
 
@@ -79,8 +84,8 @@ def new_user():
     username = request.form.get("username")
     password = request.form.get("password")
 
-    # check to see if user already exists in database, if so render the failure
-    # page
+    # check to see if user already exists in database, if so refresh page with
+    # failure message
     if db.execute("SELECT * FROM users WHERE username = :username",
                   {"username": username}).rowcount == True:
         flash("ERROR: Username already taken.", "danger")
@@ -110,7 +115,7 @@ def search():
 def search_results():
     """Search Results"""
 
-    # capture search query from form and add placeholders
+    # capture search query from form and concatonate placeholders
     search_query = "%" + request.form.get("search_query") + "%"
 
     # find zipcodes and cities similar to the search query and save them
@@ -134,26 +139,22 @@ def location_info(zipcode):
     if location is None:
         return render_template('404.html'), 404
 
-    # save lat and long data as strings
-    lat = str(location[4])
-    long = str(location[5])
-
     # construct API call for weather
-    api_call = "https://api.darksky.net/forecast/8744aa1238d1ffb8b86d1083af591f40/" \
-        + lat + "," + long
+    api_key = "8744aa1238d1ffb8b86d1083af591f40"
+    api_call = "https://api.darksky.net/forecast/" + api_key + \
+        '/' + str(location.lat) + "," + str(location.long)
 
-    # fetch API weather data, format it, and save it
+    # fetch API weather data for current weather and save it
     weather = requests.get(api_call).json()
     weather = json.dumps(weather["currently"])
     weather = json.loads(weather)
 
-    # convert epoch time to datetime
+    # convert epoch time to datetime and generate time output
     time = int(json.dumps(weather["time"]))
-    time = datetime.datetime.fromtimestamp(
-        time).strftime('%I:%M:%S %p')
+    time = datetime.datetime.fromtimestamp(time).strftime('%I:%M:%S %p')
 
     # save the location_id and zipcode to be utilized for check ins
-    session["location_id"] = location[0]
+    session["location_id"] = location.id
     session["zipcode"] = zipcode
 
     # save session location_id and username as variables
@@ -164,8 +165,7 @@ def location_info(zipcode):
     comments = db.execute("SELECT * FROM check_ins WHERE location_id = :location_id",
                           {"location_id": location_id})
 
-    # check to see if user has already commented, if so, set variable to disable
-    # comment field
+    # check to see if user has already commented, set variable accordingly
     if db.execute("SELECT * FROM check_ins WHERE location_id = :location_id \
                   AND username = :username",
                   {"location_id": location_id, "username": username}).rowcount == True:
@@ -173,7 +173,7 @@ def location_info(zipcode):
     else:
         commented = False
 
-    # render page with location information
+    # render page with location information, weather, and comments
     return render_template("location_info.html", location=location,
                            weather=weather, time=time, comments=comments,
                            commented=commented)
@@ -212,9 +212,9 @@ def api(zipcode):
     location = db.execute("SELECT * FROM locations WHERE zipcode = :zipcode",
                           {"zipcode": zipcode}).fetchone()
 
-    # if no results are returned, return 422
+    # if no results are returned, return 404
     if location is None:
-        return jsonify({"error": "Invalid zipcode"}), 422
+        return jsonify({"error": "Invalid zipcode"}), 404
 
     # set location_id, used to fetch check ins
     location_id = location.id
