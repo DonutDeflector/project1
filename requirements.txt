@@ -1,6 +1,6 @@
-Flask
-Flask-Session
-psycopg2
-SQLAlchemy
-gunicorn
-requests
+Flask==1.0.2
+Flask-Session==0.3.1
+psycopg2-binary==2.7.6.1
+SQLAlchemy==1.2.14
+gunicorn==19.9.0
+requests==2.20.1
