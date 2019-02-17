@@ -13,7 +13,7 @@ import datetime
 app = Flask(__name__)
 
 # set cookie key
-app.secret_key = "AYU9n36P&99amJDcyCQYT4Q3"
+app.secret_key = os.getenv("SECRET_KEY")
 
 # Check for environment variable
 if not os.getenv("DATABASE_URL"):
